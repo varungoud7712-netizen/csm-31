@@ -1,0 +1,55 @@
+import heapq
+
+CAP_A = 10   # Tank A capacity
+CAP_B = 7    # Tank B capacity
+TARGET = 8   # Required octane level in Tank A
+
+def heuristic(a, b):
+    return abs(a - TARGET)
+
+def astar_fuel_station():
+    start = (0, 0)
+    pq = []
+    heapq.heappush(pq, (0, start, [start]))
+    visited = set()
+
+    while pq:
+        cost, (a, b), path = heapq.heappop(pq)
+
+        if (a, b) in visited:
+            continue
+        visited.add((a, b))
+
+        # Goal reached
+        if a == TARGET:
+            return path
+
+        # Allowed fuel station operations
+        next_states = [
+            (CAP_A, b),   # Fill Tank A
+            (a, CAP_B),   # Fill Tank B
+            (0, b),       # Empty Tank A
+            (a, 0),       # Empty Tank B
+            # Transfer A → B
+            (a - min(a, CAP_B - b), b + min(a, CAP_B - b)),
+            # Transfer B → A
+            (a + min(b, CAP_A - a), b - min(b, CAP_A - a))
+        ]
+
+        for na, nb in next_states:
+            if (na, nb) not in visited:
+                g = len(path)
+                f = g + heuristic(na, nb)
+                heapq.heappush(pq, (f, (na, nb), path + [(na, nb)]))
+
+    return None
+
+# Run the program
+solution = astar_fuel_station()
+
+print("⛽ Fuel Station Adjustment Steps:\n")
+step = 0
+for a, b in solution:
+    print(f"Step {step}: Fuel station has Tank A = {a} litres, "
+          f"Tank B = {b} litres")
+    step += 1
