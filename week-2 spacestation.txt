@@ -1,0 +1,51 @@
+   step_no += 1import heapq
+
+CAP_X = 7   # Container X capacity
+CAP_Y = 4   # Container Y capacity
+TARGET = 6  # Required water in container X
+
+def heuristic(x, y):
+    return abs(x - TARGET)
+
+def astar_space_station():
+    start = (0, 0)
+    pq = []
+    heapq.heappush(pq, (0, start, [start]))
+    visited = set()
+
+    while pq:
+        cost, (x, y), path = heapq.heappop(pq)
+
+        if (x, y) in visited:
+            continue
+        visited.add((x, y))
+
+        if x == TARGET:
+            return path
+
+        next_states = [
+            (CAP_X, y),   # Fill X
+            (x, CAP_Y),   # Fill Y
+            (0, y),       # Empty X
+            (x, 0),       # Empty Y
+            (x - min(x, CAP_Y - y), y + min(x, CAP_Y - y)),  # Pour X → Y
+            (x + min(y, CAP_X - x), y - min(y, CAP_X - x))   # Pour Y → X
+        ]
+
+        for nx, ny in next_states:
+            if (nx, ny) not in visited:
+                g = len(path)
+                f = g + heuristic(nx, ny)
+                heapq.heappush(pq, (f, (nx, ny), path + [(nx, ny)]))
+
+    return None
+
+# Run
+solution = astar_space_station()
+
+print("🚀 Astronaut water measurement steps:\n")
+step_no = 0
+for x, y in solution:
+    print(f"Step {step_no}: Astronauts have Container X = {x} liters, "
+          f"Container Y = {y} liters")
+
