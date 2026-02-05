@@ -1,0 +1,48 @@
+import heapq
+
+def water_jug_astar(capX, capY, goal):
+    start = (0, 0)
+    pq = []  # priority queue: (f, g, state, path)
+    heapq.heappush(pq, (0, 0, start, [start]))
+    visited = set()
+
+    # Heuristic function: distance from goal in jug X
+    def heuristic(x, y):
+        return abs(x - goal)
+
+    while pq:
+        f, g, (x, y), path = heapq.heappop(pq)
+
+        if (x, y) in visited:
+            continue
+        visited.add((x, y))
+
+        # Goal check
+        if x == goal:
+            return path
+
+        # Possible moves
+        next_states = [
+            (capX, y),  # Fill X
+            (x, capY),  # Fill Y
+            (0, y),     # Empty X
+            (x, 0),     # Empty Y
+            (x - min(x, capY - y), y + min(x, capY - y)),  # Pour X → Y
+            (x + min(y, capX - x), y - min(y, capX - x))   # Pour Y → X
+        ]
+
+        for nx, ny in next_states:
+            if (nx, ny) not in visited:
+                ng = g + 1
+                nf = ng + heuristic(nx, ny)
+                heapq.heappush(pq, (nf, ng, (nx, ny), path + [(nx, ny)]))
+
+    return None
+
+# Example usage
+capX, capY, goal = 7, 4, 6
+solution = water_jug_astar(capX, capY, goal)
+
+print("Water Jug Problem - Steps:")
+for i, (x, y) in enumerate(solution):
+    print(f"Step {i}: Jug X = {x} L, Jug Y = {y} L")
