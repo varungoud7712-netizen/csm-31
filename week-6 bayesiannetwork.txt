@@ -1,0 +1,61 @@
+# Install first: pip install pgmpy pandas
+
+import pandas as pd
+from pgmpy.models import BayesianNetwork
+from pgmpy.estimators import MaximumLikelihoodEstimator
+from pgmpy.inference import VariableElimination
+
+# -----------------------------
+# Step 1: Create Dataset
+# -----------------------------
+data = pd.DataFrame([
+    {'Rain': 0, 'Sprinkler': 0, 'WetGrass': 0},
+    {'Rain': 0, 'Sprinkler': 1, 'WetGrass': 1},
+    {'Rain': 1, 'Sprinkler': 0, 'WetGrass': 1},
+    {'Rain': 1, 'Sprinkler': 1, 'WetGrass': 1},
+    {'Rain': 0, 'Sprinkler': 0, 'WetGrass': 0},
+    {'Rain': 1, 'Sprinkler': 0, 'WetGrass': 1},
+    {'Rain': 0, 'Sprinkler': 1, 'WetGrass': 1},
+    {'Rain': 1, 'Sprinkler': 1, 'WetGrass': 1}
+])
+
+# -----------------------------
+# Step 2: Define Structure
+# -----------------------------
+model = BayesianNetwork([
+    ('Rain', 'WetGrass'),
+    ('Sprinkler', 'WetGrass')
+])
+
+# -----------------------------
+# Step 3: Learn Parameters
+# -----------------------------
+model.fit(data, estimator=MaximumLikelihoodEstimator)
+
+# Print learned probabilities
+print("\n📊 Learned CPDs:\n")
+for cpd in model.get_cpds():
+    print(cpd)
+    print()
+
+# -----------------------------
+# Step 4: Inference
+# -----------------------------
+inference = VariableElimination(model)
+
+# Query 1: Probability of Rain given WetGrass = 1
+print("🔍 P(Rain | WetGrass=1):")
+result1 = inference.query(variables=['Rain'], evidence={'WetGrass': 1})
+print(result1)
+print()
+
+# Query 2: Probability of Sprinkler given WetGrass = 1
+print("🔍 P(Sprinkler | WetGrass=1):")
+result2 = inference.query(variables=['Sprinkler'], evidence={'WetGrass': 1})
+print(result2)
+print()
+
+# Query 3: Predict WetGrass when Rain=1
+print("🔍 P(WetGrass | Rain=1):")
+result3 = inference.query(variables=['WetGrass'], evidence={'Rain': 1})
+print(result3)
